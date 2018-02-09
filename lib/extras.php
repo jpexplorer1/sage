@@ -33,6 +33,8 @@ function create_posttype() {
       'public' => true,
       'has_archive' => true,
       'rewrite' => array('slug' => 'projects'),
+      'supports' => array( 'title', 'editor', 'thumbnail' ),
+      'taxonomies' => array( 'topics' ),
       'menu_icon'   => 'dashicons-star-empty',
     )
   );
@@ -82,7 +84,8 @@ function projects() {
     'label'                 => __( 'Project', 'text_domain' ),
     'description'           => __( 'Post Type Description', 'text_domain' ),
     'labels'                => $labels,
-    'supports'              => array( 'title', 'editor' ),
+    'supports'              => array( 'title', 'editor', 'thumbnail', 'page-attributes' ),
+    'taxonomies'            => array( 'topics' ),
     'hierarchical'          => false,
     'public'                => true,
     'show_ui'               => true,
@@ -101,19 +104,62 @@ function projects() {
 
 }
 
-/* Hook into the 'init' action so that the function
-* Containing our post type registration is not
-* unnecessarily executed.
-
-add_action( 'init',  __NAMESPACE__ . '\\projects', 0 );
-add_action( 'pre_get_posts', __NAMESPACE__ . '\\add_my_post_types_to_query' );
-function add_my_post_types_to_query( $query ) {
-  if ( is_home() && $query->is_main_query() )
-    $query->set( 'post_type', array( 'projects' ) );
-  return $query;
+//* CUSTOM TAXONOMY
+function create_topics_taxonomies() {
+  register_topics_taxonomies( 'topics',
+  // CPT Options
+    array(
+      'labels' => array(
+        'name'              => _x('Topics', 'taxonomy general name', 'textdomain'),
+        'singular_name'     => _x('Topic', 'taxonomy singular name', 'textdomain'),
+        'search_items'      => __('Search Topics', 'textdomain'),
+        'all_items'         => __('All Topics', 'textdomain'),
+        'parent_item'       => __('Parent Topic', 'textdomain'),
+        'parent_item_colon' => __('Parent Topic:', 'textdomain'),
+        'edit_item'         => __('Edit Topic', 'textdomain'),
+      ),
+      'hierarchical'      => true,
+      'labels'            => $labels,
+      'show_ui'           => true,
+      'show_admin_column' => true,
+      'query_var'         => true,
+      'public'             => true,
+      'publicly_queryable' => true,
+    )
+  );
 }
-//*EOF CUSTOM POST TYPE */
+// Hooking up our function to theme setup
+add_action( 'init',  __NAMESPACE__ . '\\topics_taxonomies' );
 
+// Register Custom Taxonomy
+function topics_taxonomies() {
+  $labels = array(
+    'name'              => _x('Topics', 'taxonomy general name', 'textdomain'),
+    'singular_name'     => _x('Topic', 'taxonomy singular name', 'textdomain'),
+    'search_items'      => __('Search Topics', 'textdomain'),
+    'all_items'         => __('All Topics', 'textdomain'),
+    'parent_item'       => __('Parent Topic', 'textdomain'),
+    'parent_item_colon' => __('Parent Topic:', 'textdomain'),
+    'edit_item'         => __('Edit Topic', 'textdomain'),
+    'update_item'       => __('Update Topic', 'textdomain'),
+    'add_new_item'      => __('Add New Topic', 'textdomain'),
+    'new_item_name'     => __('New Topic Name', 'textdomain'),
+    'menu_name'         => __('Topic', 'textdomain'),
+  );
+  $args = array(
+    'hierarchical'      => true,
+    'labels'            => $labels,
+    'show_ui'           => true,
+    'show_admin_column' => true,
+    'query_var'         => true,
+    'public'             => true,
+    'publicly_queryable' => true,
+    'rewrite'           => array('slug' => 'topics'),
+  );
+
+  register_taxonomy('topics', array('projects'), $args);
+
+}
 
 use Roots\Sage\Setup;
 
